@@ -1,0 +1,384 @@
+{
+  "directors": [
+    {
+      "name": "Christopher Nolan",
+      "avg_roi": 3.8,
+      "hit_rate": 0.9,
+      "style": "blockbuster"
+    },
+    {
+      "name": "Steven Spielberg",
+      "avg_roi": 3.2,
+      "hit_rate": 0.85,
+      "style": "blockbuster"
+    },
+    {
+      "name": "Denis Villeneuve",
+      "avg_roi": 2.1,
+      "hit_rate": 0.75,
+      "style": "prestige"
+    },
+    {
+      "name": "Greta Gerwig",
+      "avg_roi": 3.5,
+      "hit_rate": 0.8,
+      "style": "prestige"
+    },
+    {
+      "name": "Jordan Peele",
+      "avg_roi": 5.0,
+      "hit_rate": 0.9,
+      "style": "horror_specialist"
+    },
+    {
+      "name": "James Wan",
+      "avg_roi": 4.5,
+      "hit_rate": 0.85,
+      "style": "horror_specialist"
+    },
+    {
+      "name": "Taika Waititi",
+      "avg_roi": 2.8,
+      "hit_rate": 0.75,
+      "style": "comedy"
+    },
+    {
+      "name": "Ryan Coogler",
+      "avg_roi": 4.0,
+      "hit_rate": 0.85,
+      "style": "blockbuster"
+    },
+    {
+      "name": "Ari Aster",
+      "avg_roi": 6.0,
+      "hit_rate": 0.7,
+      "style": "horror_specialist"
+    },
+    {
+      "name": "Wes Anderson",
+      "avg_roi": 1.5,
+      "hit_rate": 0.6,
+      "style": "indie"
+    },
+    {
+      "name": "Martin Scorsese",
+      "avg_roi": 1.8,
+      "hit_rate": 0.65,
+      "style": "prestige"
+    },
+    {
+      "name": "Quentin Tarantino",
+      "avg_roi": 2.5,
+      "hit_rate": 0.8,
+      "style": "prestige"
+    },
+    {
+      "name": "James Cameron",
+      "avg_roi": 5.5,
+      "hit_rate": 0.95,
+      "style": "blockbuster"
+    },
+    {
+      "name": "Ridley Scott",
+      "avg_roi": 1.6,
+      "hit_rate": 0.55,
+      "style": "prestige"
+    },
+    {
+      "name": "David Fincher",
+      "avg_roi": 2.0,
+      "hit_rate": 0.7,
+      "style": "prestige"
+    },
+    {
+      "name": "The Russo Brothers",
+      "avg_roi": 4.2,
+      "hit_rate": 0.85,
+      "style": "blockbuster"
+    },
+    {
+      "name": "Michael Bay",
+      "avg_roi": 2.2,
+      "hit_rate": 0.65,
+      "style": "blockbuster"
+    },
+    {
+      "name": "Jon Favreau",
+      "avg_roi": 3.0,
+      "hit_rate": 0.8,
+      "style": "blockbuster"
+    },
+    {
+      "name": "M. Night Shyamalan",
+      "avg_roi": 2.8,
+      "hit_rate": 0.55,
+      "style": "thriller"
+    },
+    {
+      "name": "Chloe Zhao",
+      "avg_roi": 1.2,
+      "hit_rate": 0.5,
+      "style": "indie"
+    },
+    {
+      "name": "Barry Jenkins",
+      "avg_roi": 1.8,
+      "hit_rate": 0.65,
+      "style": "indie"
+    },
+    {
+      "name": "Damien Chazelle",
+      "avg_roi": 2.5,
+      "hit_rate": 0.7,
+      "style": "prestige"
+    },
+    {
+      "name": "Bong Joon-ho",
+      "avg_roi": 3.0,
+      "hit_rate": 0.75,
+      "style": "prestige"
+    },
+    {
+      "name": "Sam Raimi",
+      "avg_roi": 2.5,
+      "hit_rate": 0.7,
+      "style": "blockbuster"
+    },
+    {
+      "name": "Tim Burton",
+      "avg_roi": 1.8,
+      "hit_rate": 0.6,
+      "style": "fantasy"
+    },
+    {
+      "name": "Matt Reeves",
+      "avg_roi": 2.8,
+      "hit_rate": 0.75,
+      "style": "blockbuster"
+    },
+    {
+      "name": "Edgar Wright",
+      "avg_roi": 1.5,
+      "hit_rate": 0.65,
+      "style": "comedy"
+    },
+    {
+      "name": "Emerald Fennell",
+      "avg_roi": 2.5,
+      "hit_rate": 0.7,
+      "style": "thriller"
+    },
+    {
+      "name": "Robert Eggers",
+      "avg_roi": 2.0,
+      "hit_rate": 0.6,
+      "style": "horror_specialist"
+    }
+  ],
+  "producers": [
+    {
+      "name": "Kevin Feige",
+      "avg_rev_mult": 4.0,
+      "hit_rate": 0.92
+    },
+    {
+      "name": "Jerry Bruckheimer",
+      "avg_rev_mult": 2.5,
+      "hit_rate": 0.7
+    },
+    {
+      "name": "Kathleen Kennedy",
+      "avg_rev_mult": 3.0,
+      "hit_rate": 0.75
+    },
+    {
+      "name": "Jason Blum",
+      "avg_rev_mult": 8.0,
+      "hit_rate": 0.85
+    },
+    {
+      "name": "Emma Thomas",
+      "avg_rev_mult": 3.5,
+      "hit_rate": 0.88
+    },
+    {
+      "name": "David Heyman",
+      "avg_rev_mult": 3.2,
+      "hit_rate": 0.8
+    },
+    {
+      "name": "Scott Rudin",
+      "avg_rev_mult": 1.8,
+      "hit_rate": 0.65
+    },
+    {
+      "name": "Amy Pascal",
+      "avg_rev_mult": 2.8,
+      "hit_rate": 0.72
+    },
+    {
+      "name": "Brad Pitt",
+      "avg_rev_mult": 2.0,
+      "hit_rate": 0.6
+    },
+    {
+      "name": "Jordan Peele",
+      "avg_rev_mult": 5.5,
+      "hit_rate": 0.85
+    },
+    {
+      "name": "A24",
+      "avg_rev_mult": 3.5,
+      "hit_rate": 0.65
+    },
+    {
+      "name": "Megan Ellison",
+      "avg_rev_mult": 1.5,
+      "hit_rate": 0.55
+    },
+    {
+      "name": "Neal H. Moritz",
+      "avg_rev_mult": 2.8,
+      "hit_rate": 0.68
+    },
+    {
+      "name": "Lorenzo di Bonaventura",
+      "avg_rev_mult": 2.2,
+      "hit_rate": 0.6
+    },
+    {
+      "name": "Charles Roven",
+      "avg_rev_mult": 2.5,
+      "hit_rate": 0.65
+    },
+    {
+      "name": "Jon Landau",
+      "avg_rev_mult": 5.0,
+      "hit_rate": 0.9
+    },
+    {
+      "name": "Frank Marshall",
+      "avg_rev_mult": 2.5,
+      "hit_rate": 0.7
+    },
+    {
+      "name": "Peter Chernin",
+      "avg_rev_mult": 2.0,
+      "hit_rate": 0.62
+    },
+    {
+      "name": "Mary Parent",
+      "avg_rev_mult": 2.8,
+      "hit_rate": 0.7
+    }
+  ],
+  "writers": [
+    {
+      "name": "Aaron Sorkin",
+      "quality": 0.82,
+      "hit_rate": 0.7
+    },
+    {
+      "name": "Christopher Nolan",
+      "quality": 0.88,
+      "hit_rate": 0.85
+    },
+    {
+      "name": "Quentin Tarantino",
+      "quality": 0.85,
+      "hit_rate": 0.8
+    },
+    {
+      "name": "Greta Gerwig",
+      "quality": 0.8,
+      "hit_rate": 0.78
+    },
+    {
+      "name": "Jordan Peele",
+      "quality": 0.9,
+      "hit_rate": 0.88
+    },
+    {
+      "name": "Charlie Kaufman",
+      "quality": 0.75,
+      "hit_rate": 0.5
+    },
+    {
+      "name": "Emerald Fennell",
+      "quality": 0.78,
+      "hit_rate": 0.7
+    },
+    {
+      "name": "Bong Joon-ho",
+      "quality": 0.85,
+      "hit_rate": 0.75
+    },
+    {
+      "name": "Taylor Sheridan",
+      "quality": 0.8,
+      "hit_rate": 0.72
+    },
+    {
+      "name": "Tony Kushner",
+      "quality": 0.78,
+      "hit_rate": 0.65
+    },
+    {
+      "name": "Eric Roth",
+      "quality": 0.75,
+      "hit_rate": 0.68
+    },
+    {
+      "name": "Damien Chazelle",
+      "quality": 0.82,
+      "hit_rate": 0.72
+    },
+    {
+      "name": "Ryan Coogler",
+      "quality": 0.8,
+      "hit_rate": 0.82
+    },
+    {
+      "name": "Edgar Wright",
+      "quality": 0.78,
+      "hit_rate": 0.65
+    },
+    {
+      "name": "Denis Villeneuve",
+      "quality": 0.8,
+      "hit_rate": 0.72
+    },
+    {
+      "name": "James Gunn",
+      "quality": 0.78,
+      "hit_rate": 0.8
+    },
+    {
+      "name": "Diablo Cody",
+      "quality": 0.72,
+      "hit_rate": 0.58
+    },
+    {
+      "name": "Taika Waititi",
+      "quality": 0.75,
+      "hit_rate": 0.7
+    },
+    {
+      "name": "Rian Johnson",
+      "quality": 0.78,
+      "hit_rate": 0.68
+    }
+  ],
+  "genres": [
+    "Action",
+    "Comedy",
+    "Drama",
+    "Horror",
+    "Sci-Fi",
+    "Thriller",
+    "Animation",
+    "Romance",
+    "Fantasy",
+    "Adventure"
+  ]
+}

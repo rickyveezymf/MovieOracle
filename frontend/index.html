@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BoxOffice Oracle — Movie Success Predictor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --navy-mid: #334155;
+      --slate: #475569;
+      --slate-light: #94a3b8;
+      --teal: #06b6d4;
+      --teal-dark: #0891b2;
+      --teal-glow: rgba(6, 182, 212, 0.15);
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --violet: #8b5cf6;
+      --white: #f8fafc;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --input-bg: #0f172a;
+      --input-border: #475569;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--navy); }
+    ::-webkit-scrollbar-thumb { background: var(--navy-mid); border-radius: 3px; }
+
+    /* ─── Layout ─── */
+    .app-container { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+
+    /* ─── Header ─── */
+    .header {
+      text-align: center;
+      padding: 40px 0 32px;
+    }
+    .header-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .header-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--teal), var(--violet));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
+    }
+    .header h1 {
+      font-size: 32px; font-weight: 800;
+      background: linear-gradient(135deg, var(--teal), #a78bfa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header p { color: var(--slate-light); font-size: 15px; margin-top: 6px; }
+
+    /* ─── Main grid ─── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ─── Card ─── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 16px; font-weight: 700;
+      color: var(--white);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-title-icon {
+      width: 28px; height: 28px;
+      background: var(--teal-glow);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    /* ─── Form ─── */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: var(--slate-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .form-label span { color: var(--rose); }
+
+    /* Searchable select */
+    .select-wrapper { position: relative; }
+    .select-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--white);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .select-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-glow); }
+    .select-input::placeholder { color: var(--slate); }
+
+    .dropdown-list {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: var(--navy-light);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .dropdown-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover { background: var(--navy-mid); }
+    .dropdown-item-name { color: var(--white); font-weight: 500; }
+    .dropdown-item-stat { color: var(--teal); font-size: 11px; font-weight: 600; }
+
+    /* Native select */
+    .form-select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--white);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      cursor: pointer;
+    }
+    .form-select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-glow); }
+
+    /* Budget slider */
+    .budget-display {
+      text-align: center;
+      font-size: 22px; font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+    .budget-slider {
+      width: 100%;
+      -webkit-appearance: none; appearance: none;
+      height: 6px;
+      background: linear-gradient(90deg, var(--emerald), var(--teal), var(--violet), var(--rose));
+      border-radius: 3px;
+      outline: none;
+    }
+    .budget-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 20px; height: 20px;
+      background: var(--white);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .budget-tier-labels {
+      display: flex; justify-content: space-between;
+      font-size: 10px; color: var(--slate); margin-top: 6px;
+    }
+
+    /* Toggle section */
+    .advanced-toggle {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 0;
+      color: var(--slate-light);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      border: none; background: none;
+      width: 100%;
+    }
+    .advanced-toggle:hover { color: var(--teal); }
+    .toggle-arrow { transition: transform 0.2s; font-size: 10px; }
+    .toggle-arrow.open { transform: rotate(90deg); }
+
+    /* Submit button */
+    .predict-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+      position: relative;
+      overflow: hidden;
+    }
+    .predict-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4); }
+    .predict-btn:active { transform: translateY(0); }
+    .predict-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ─── Results ─── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .results-grid .card.full-width { grid-column: 1 / -1; }
+
+    /* Metric cards */
+    .metric-value {
+      font-size: 36px; font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .metric-sub { font-size: 13px; color: var(--slate-light); }
+    .metric-range {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--slate-light);
+    }
+    .metric-range strong { color: var(--white); }
+
+    /* Color utilities */
+    .text-emerald { color: var(--emerald); }
+    .text-teal { color: var(--teal); }
+    .text-amber { color: var(--amber); }
+    .text-rose { color: var(--rose); }
+    .text-violet { color: var(--violet); }
+
+    /* ─── Gauge ─── */
+    .gauge-container {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 10px 0;
+    }
+    .gauge-svg { width: 180px; height: 100px; }
+    .gauge-label {
+      margin-top: 4px;
+      font-size: 12px; font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .gauge-low { background: rgba(244,63,94,0.15); color: var(--rose); }
+    .gauge-med { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .gauge-high { background: rgba(16,185,129,0.15); color: var(--emerald); }
+
+    /* ─── Bar chart ─── */
+    .bar-chart { margin-top: 8px; }
+    .bar-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 10px;
+    }
+    .bar-label { font-size: 12px; color: var(--slate-light); width: 130px; text-align: right; flex-shrink: 0; }
+    .bar-track {
+      flex: 1; height: 22px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex; align-items: center;
+      padding-left: 8px;
+      font-size: 11px; font-weight: 700; color: white;
+    }
+
+    /* ─── Confidence badge ─── */
+    .confidence-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+    .confidence-high { background: rgba(16,185,129,0.15); color: var(--emerald); }
+    .confidence-medium { background: rgba(245,158,11,0.15); color: var(--amber); }
+    .confidence-low { background: rgba(244,63,94,0.15); color: var(--rose); }
+
+    /* ─── Empty state ─── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 40px;
+    }
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+    .empty-title {
+      font-size: 20px; font-weight: 700;
+      color: var(--slate-light);
+      margin-bottom: 8px;
+    }
+    .empty-desc { color: var(--slate); font-size: 14px; max-width: 400px; margin: 0 auto; }
+
+    /* ─── Loading ─── */
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    .loading-dot { animation: pulse 1.2s ease-in-out infinite; }
+    .loading-dot:nth-child(2) { animation-delay: 0.15s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.3s; }
+
+    /* ─── Input summary ─── */
+    .input-summary {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .input-chip {
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--teal);
+    }
+
+    /* ─── Animations ─── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+      animation: fadeInUp 0.5s ease-out forwards;
+      opacity: 0;
+    }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    // ─── API helpers ──────────────────────────────────────────────────────────
+    const API_BASE = window.location.origin;
+
+    async function fetchTalent(role, query) {
+      const res = await fetch(`${API_BASE}/api/talent/${role}?q=${encodeURIComponent(query)}`);
+      return res.json();
+    }
+
+    async function fetchPrediction(data) {
+      const res = await fetch(`${API_BASE}/api/predict`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      return res.json();
+    }
+
+    // ─── Utility ──────────────────────────────────────────────────────────────
+    function formatMoney(n) {
+      if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(1)}B`;
+      if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(0)}M`;
+      if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+      return `$${n}`;
+    }
+
+    function formatMoneyFull(n) {
+      return "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+    }
+
+    function getBudgetTier(budget) {
+      if (budget < 5_000_000) return "Micro";
+      if (budget < 20_000_000) return "Low";
+      if (budget < 75_000_000) return "Mid";
+      if (budget < 150_000_000) return "High";
+      return "Blockbuster";
+    }
+
+    function getRoiColor(roi) {
+      if (roi > 100) return "var(--emerald)";
+      if (roi > 0) return "var(--teal)";
+      if (roi > -30) return "var(--amber)";
+      return "var(--rose)";
+    }
+
+    const MONTH_NAMES = ["", "January", "February", "March", "April", "May", "June",
+                         "July", "August", "September", "October", "November", "December"];
+
+    const BAR_COLORS = [
+      "linear-gradient(90deg, #06b6d4, #22d3ee)",
+      "linear-gradient(90deg, #8b5cf6, #a78bfa)",
+      "linear-gradient(90deg, #10b981, #34d399)",
+      "linear-gradient(90deg, #f59e0b, #fbbf24)",
+      "linear-gradient(90deg, #f43f5e, #fb7185)",
+      "linear-gradient(90deg, #6366f1, #818cf8)",
+    ];
+
+    // ─── SearchableSelect ─────────────────────────────────────────────────────
+    function SearchableSelect({ label, required, role, placeholder, value, onChange, statLabel }) {
+      const [query, setQuery] = useState("");
+      const [results, setResults] = useState([]);
+      const [isOpen, setIsOpen] = useState(false);
+      const [inputText, setInputText] = useState(value || "");
+      const wrapperRef = useRef(null);
+
+      useEffect(() => {
+        if (!query && !isOpen) return;
+        const timer = setTimeout(async () => {
+          const data = await fetchTalent(role, query);
+          setResults(data);
+        }, 150);
+        return () => clearTimeout(timer);
+      }, [query, role, isOpen]);
+
+      useEffect(() => {
+        function handleClickOutside(e) {
+          if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+            setIsOpen(false);
+          }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, []);
+
+      function handleSelect(item) {
+        setInputText(item.name);
+        setQuery("");
+        setIsOpen(false);
+        onChange(item.name);
+      }
+
+      function getStatValue(item) {
+        if (item.avg_roi !== undefined) return `ROI: ${item.avg_roi}x`;
+        if (item.avg_rev_mult !== undefined) return `Rev: ${item.avg_rev_mult}x`;
+        if (item.quality !== undefined) return `Quality: ${(item.quality * 100).toFixed(0)}%`;
+        return "";
+      }
+
+      return (
+        <div className="form-group">
+          <label className="form-label">{label} {required && <span>*</span>}</label>
+          <div className="select-wrapper" ref={wrapperRef}>
+            <input
+              className="select-input"
+              placeholder={placeholder}
+              value={inputText}
+              onChange={(e) => {
+                setInputText(e.target.value);
+                setQuery(e.target.value);
+                setIsOpen(true);
+                if (!e.target.value) onChange("");
+              }}
+              onFocus={() => { setIsOpen(true); if (!query) setQuery(""); }}
+            />
+            {isOpen && results.length > 0 && (
+              <div className="dropdown-list">
+                {results.map((item, i) => (
+                  <div key={i} className="dropdown-item" onClick={() => handleSelect(item)}>
+                    <span className="dropdown-item-name">{item.name}</span>
+                    <span className="dropdown-item-stat">{getStatValue(item)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ─── Gauge Component ──────────────────────────────────────────────────────
+    function Gauge({ value, size = 180 }) {
+      const pct = Math.max(0, Math.min(100, value));
+      const angle = -90 + (pct / 100) * 180;
+      const r = 70;
+      const cx = 90, cy = 88;
+
+      // Arc path
+      function polarToCart(angleDeg) {
+        const rad = (angleDeg - 180) * Math.PI / 180;
+        return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+      }
+      const startAngle = -180;
+      const endAngle = startAngle + (pct / 100) * 180;
+      const start = polarToCart(startAngle);
+      const end = polarToCart(endAngle);
+      const largeArc = pct > 50 ? 1 : 0;
+
+      const color = pct >= 60 ? "var(--emerald)" : pct >= 35 ? "var(--amber)" : "var(--rose)";
+      const label = pct >= 60 ? "Low Risk" : pct >= 35 ? "Moderate" : "High Risk";
+      const labelClass = pct >= 60 ? "gauge-high" : pct >= 35 ? "gauge-med" : "gauge-low";
+
+      return (
+        <div className="gauge-container">
+          <svg className="gauge-svg" viewBox="0 0 180 105">
+            {/* Background arc */}
+            <path d={`M 20,88 A ${r},${r} 0 0 1 160,88`}
+                  fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" strokeLinecap="round" />
+            {/* Value arc */}
+            {pct > 0 && (
+              <path d={`M ${start.x},${start.y} A ${r},${r} 0 ${largeArc} 1 ${end.x},${end.y}`}
+                    fill="none" stroke={color} strokeWidth="12" strokeLinecap="round"
+                    style={{ filter: `drop-shadow(0 0 8px ${color})` }} />
+            )}
+            {/* Value text */}
+            <text x="90" y="78" textAnchor="middle" fill={color}
+                  style={{ fontSize: "30px", fontWeight: 800, fontFamily: "Inter" }}>
+              {pct.toFixed(1)}%
+            </text>
+          </svg>
+          <span className={`gauge-label ${labelClass}`}>{label}</span>
+        </div>
+      );
+    }
+
+    // ─── BarChart Component ───────────────────────────────────────────────────
+    function ImportanceChart({ data }) {
+      if (!data) return null;
+      const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+      const max = Math.max(...entries.map(e => e[1]), 1);
+
+      return (
+        <div className="bar-chart">
+          {entries.map(([label, value], i) => (
+            <div key={label} className="bar-row">
+              <span className="bar-label">{label}</span>
+              <div className="bar-track">
+                <div className="bar-fill"
+                     style={{
+                       width: `${(value / max) * 100}%`,
+                       background: BAR_COLORS[i % BAR_COLORS.length],
+                       minWidth: value > 0 ? "32px" : "0"
+                     }}>
+                  {value > 3 ? `${value}%` : ""}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ─── Main App ─────────────────────────────────────────────────────────────
+    function App() {
+      const [director, setDirector] = useState("");
+      const [producer, setProducer] = useState("");
+      const [writer, setWriter] = useState("");
+      const [genre, setGenre] = useState("Action");
+      const [budget, setBudget] = useState(50_000_000);
+      const [month, setMonth] = useState(6);
+      const [showAdvanced, setShowAdvanced] = useState(false);
+      const [prediction, setPrediction] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [genres, setGenres] = useState([]);
+
+      useEffect(() => {
+        fetch(`${API_BASE}/api/genres`).then(r => r.json()).then(setGenres).catch(() => {
+          setGenres(["Action","Comedy","Drama","Horror","Sci-Fi","Thriller","Animation","Romance","Fantasy","Adventure"]);
+        });
+      }, []);
+
+      async function handlePredict(e) {
+        e.preventDefault();
+        if (!director) return;
+        setLoading(true);
+        try {
+          const result = await fetchPrediction({
+            director, producer: producer || "Unknown Producer",
+            writer: writer || "Unknown Writer",
+            genre, budget, release_month: month,
+          });
+          setPrediction(result);
+        } catch (err) {
+          console.error(err);
+        }
+        setLoading(false);
+      }
+
+      return (
+        <div className="app-container">
+          {/* Header */}
+          <header className="header">
+            <div className="header-logo">
+              <div className="header-icon">🎬</div>
+              <h1>BoxOffice Oracle</h1>
+            </div>
+            <p>AI-powered movie financial success prediction</p>
+          </header>
+
+          {/* Main content */}
+          <div className="main-grid">
+            {/* ─── Left: Input Form ─── */}
+            <div>
+              <div className="card">
+                <div className="card-title">
+                  <div className="card-title-icon">🎯</div>
+                  Prediction Input
+                </div>
+
+                <form onSubmit={handlePredict}>
+                  <SearchableSelect
+                    label="Director" required role="directors"
+                    placeholder="Search for a director..."
+                    value={director} onChange={setDirector}
+                  />
+                  <SearchableSelect
+                    label="Producer" role="producers"
+                    placeholder="Search for a producer..."
+                    value={producer} onChange={setProducer}
+                  />
+                  <SearchableSelect
+                    label="Writer" role="writers"
+                    placeholder="Search for a writer..."
+                    value={writer} onChange={setWriter}
+                  />
+
+                  <div className="form-group">
+                    <label className="form-label">Genre</label>
+                    <select className="form-select" value={genre} onChange={e => setGenre(e.target.value)}>
+                      {genres.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Production Budget</label>
+                    <div className="budget-display">{formatMoney(budget)}</div>
+                    <input type="range" className="budget-slider"
+                           min={500000} max={400000000} step={500000}
+                           value={budget} onChange={e => setBudget(Number(e.target.value))} />
+                    <div className="budget-tier-labels">
+                      <span>$500K</span>
+                      <span>$50M</span>
+                      <span>$150M</span>
+                      <span>$400M</span>
+                    </div>
+                    <div style={{ textAlign: "center", marginTop: 4 }}>
+                      <span style={{ fontSize: 11, color: "var(--teal)", fontWeight: 600 }}>
+                        {getBudgetTier(budget)} Budget
+                      </span>
+                    </div>
+                  </div>
+
+                  <button type="button" className="advanced-toggle"
+                          onClick={() => setShowAdvanced(!showAdvanced)}>
+                    <span className={`toggle-arrow ${showAdvanced ? "open" : ""}`}>▶</span>
+                    Advanced Options
+                  </button>
+
+                  {showAdvanced && (
+                    <div className="form-group">
+                      <label className="form-label">Release Month</label>
+                      <select className="form-select" value={month} onChange={e => setMonth(Number(e.target.value))}>
+                        {MONTH_NAMES.slice(1).map((m, i) => (
+                          <option key={i+1} value={i+1}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <button type="submit" className="predict-btn" disabled={!director || loading}>
+                    {loading ? (
+                      <span>
+                        Analyzing
+                        <span className="loading-dot"> .</span>
+                        <span className="loading-dot"> .</span>
+                        <span className="loading-dot"> .</span>
+                      </span>
+                    ) : (
+                      "🔮  Predict Financial Outcome"
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* ─── Right: Results Dashboard ─── */}
+            <div>
+              {!prediction && !loading ? (
+                <div className="results-grid">
+                  <div className="card full-width empty-state">
+                    <div className="empty-icon">🎬</div>
+                    <div className="empty-title">Ready to Predict</div>
+                    <div className="empty-desc">
+                      Select a director and configure your film parameters, then click
+                      "Predict Financial Outcome" to see AI-powered projections.
+                    </div>
+                  </div>
+                </div>
+              ) : prediction ? (
+                <div>
+                  {/* Input summary */}
+                  <div className="input-summary">
+                    <span className="input-chip">🎬 {prediction.input.director}</span>
+                    {prediction.input.producer !== "Unknown Producer" && (
+                      <span className="input-chip">🎥 {prediction.input.producer}</span>
+                    )}
+                    {prediction.input.writer !== "Unknown Writer" && (
+                      <span className="input-chip">✍️ {prediction.input.writer}</span>
+                    )}
+                    <span className="input-chip">🎭 {prediction.input.genre}</span>
+                    <span className="input-chip">💰 {formatMoney(prediction.input.budget)}</span>
+                    <span className="input-chip">📅 {MONTH_NAMES[prediction.input.release_month]}</span>
+                  </div>
+
+                  <div className="results-grid">
+                    {/* Revenue Card */}
+                    <div className="card animate-in delay-1">
+                      <div className="card-title">
+                        <div className="card-title-icon">💰</div>
+                        Predicted Revenue
+                      </div>
+                      <div className="metric-value text-teal">
+                        {formatMoney(prediction.predicted_revenue)}
+                      </div>
+                      <div className="metric-sub">Worldwide Gross</div>
+                      <div className="metric-range">
+                        Range: <strong>{formatMoney(prediction.revenue_low)}</strong> — <strong>{formatMoney(prediction.revenue_high)}</strong>
+                      </div>
+                    </div>
+
+                    {/* ROI Card */}
+                    <div className="card animate-in delay-2">
+                      <div className="card-title">
+                        <div className="card-title-icon">📈</div>
+                        Return on Investment
+                      </div>
+                      <div className="metric-value" style={{ color: getRoiColor(prediction.roi_percent) }}>
+                        {prediction.roi_percent > 0 ? "+" : ""}{prediction.roi_percent}%
+                      </div>
+                      <div className="metric-sub">
+                        {prediction.roi_percent > 0 ? "Projected Profit" : "Projected Loss"}:{" "}
+                        <strong style={{ color: getRoiColor(prediction.roi_percent) }}>
+                          {formatMoney(Math.abs(prediction.predicted_revenue - prediction.budget))}
+                        </strong>
+                      </div>
+                      <div className="metric-range">
+                        Budget: <strong>{formatMoney(prediction.budget)}</strong>
+                      </div>
+                    </div>
+
+                    {/* Success Gauge */}
+                    <div className="card animate-in delay-3">
+                      <div className="card-title">
+                        <div className="card-title-icon">🎯</div>
+                        Success Probability
+                      </div>
+                      <Gauge value={prediction.success_probability} />
+                      <div style={{ textAlign: "center", marginTop: 8 }}>
+                        <span className={`confidence-badge confidence-${prediction.confidence.toLowerCase()}`}>
+                          {prediction.confidence === "High" ? "●" : prediction.confidence === "Medium" ? "◐" : "○"}
+                          {" "}{prediction.confidence} Confidence
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Feature Importance */}
+                    <div className="card animate-in delay-4">
+                      <div className="card-title">
+                        <div className="card-title-icon">🧠</div>
+                        Prediction Drivers
+                      </div>
+                      <ImportanceChart data={prediction.feature_importance} />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <footer style={{ textAlign: "center", padding: "40px 0 24px", color: "var(--slate)", fontSize: 12 }}>
+            BoxOffice Oracle — Predictions are statistical estimates based on historical patterns.
+            Not financial advice.
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
