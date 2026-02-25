@@ -1,8 +1,38 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-.DS_Store
-*.log
-node_modules/
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
 .env
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+*.log
+
+# ML artifacts (generated — not committed to git)
+data/raw/
+data/processed/
+models/*.joblib
+models/feature_columns.json
+models/evaluation_report.txt
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Other
 app-preview.html
