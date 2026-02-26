@@ -75,8 +75,8 @@ TARGET_REVENUE = "log_revenue"
 TARGET_SUCCESS = "success"
 
 # Temporal split thresholds
-TRAIN_END = "2020-01-01"
-VAL_END = "2023-01-01"
+TRAIN_END = "2014-01-01"
+VAL_END = "2016-01-01"
 
 # Optuna tuning settings
 N_OPTUNA_TRIALS = 20
@@ -121,10 +121,24 @@ def temporal_split(df: pd.DataFrame):
     """
     Split dataset by release_date into train/val/test.
     Returns (train_df, val_df, test_df).
+    Falls back to a chronological percentage split if date thresholds
+    produce an empty validation set.
     """
     train_df = df[df["release_date"] < TRAIN_END].copy()
     val_df = df[(df["release_date"] >= TRAIN_END) & (df["release_date"] < VAL_END)].copy()
     test_df = df[df["release_date"] >= VAL_END].copy()
+
+    # Fallback: if validation set is empty, split chronologically by percentage
+    if len(val_df) == 0:
+        print("  WARNING: Date thresholds produced empty val set. "
+              "Falling back to chronological percentage split.")
+        df_sorted = df.sort_values("release_date").reset_index(drop=True)
+        n = len(df_sorted)
+        train_end_idx = int(n * 0.70)
+        val_end_idx = int(n * 0.85)
+        train_df = df_sorted.iloc[:train_end_idx].copy()
+        val_df = df_sorted.iloc[train_end_idx:val_end_idx].copy()
+        test_df = df_sorted.iloc[val_end_idx:].copy()
 
     print(f"  Train: {len(train_df):,} films (before {TRAIN_END})")
     print(f"  Val:   {len(val_df):,} films ({TRAIN_END} – {VAL_END})")
@@ -374,21 +388,24 @@ def main():
     print(f"  Success rate in training set: {y_train_cls.mean():.1%}")
 
     # ── Sanity checks ──
-    print("\nSanity check: quantile ordering ...")
-    sanity_check_quantiles(p25, p50, p75, X_val)
+    if len(X_val) > 0:
+        print("\nSanity check: quantile ordering ...")
+        sanity_check_quantiles(p25, p50, p75, X_val)
 
-    # ── Quick validation metrics ──
-    print("\nQuick validation metrics (p50 model):")
-    val_preds = p50.predict(X_val)
-    val_mape = compute_mape(y_val_rev, val_preds)
-    val_r2 = 1 - np.sum((y_val_rev - val_preds) ** 2) / np.sum((y_val_rev - y_val_rev.mean()) ** 2)
-    print(f"  MAPE: {val_mape:.1f}%  (target: < 40%)")
-    print(f"  R²:   {val_r2:.3f}  (target: > 0.55)")
+        # ── Quick validation metrics ──
+        print("\nQuick validation metrics (p50 model):")
+        val_preds = p50.predict(X_val)
+        val_mape = compute_mape(y_val_rev, val_preds)
+        val_r2 = 1 - np.sum((y_val_rev - val_preds) ** 2) / np.sum((y_val_rev - y_val_rev.mean()) ** 2)
+        print(f"  MAPE: {val_mape:.1f}%  (target: < 40%)")
+        print(f"  R²:   {val_r2:.3f}  (target: > 0.55)")
 
-    val_cls_proba = clf.predict_proba(X_val)[:, 1]
-    val_cls_pred = (val_cls_proba > 0.5).astype(int)
-    val_accuracy = np.mean(val_cls_pred == y_val_cls)
-    print(f"\nSuccess classifier accuracy (val): {val_accuracy:.1%}")
+        val_cls_proba = clf.predict_proba(X_val)[:, 1]
+        val_cls_pred = (val_cls_proba > 0.5).astype(int)
+        val_accuracy = np.mean(val_cls_pred == y_val_cls)
+        print(f"\nSuccess classifier accuracy (val): {val_accuracy:.1%}")
+    else:
+        print("\nNo validation films available — skipping sanity checks and val metrics.")
 
     # ── Save models ──
     print("\nSaving models ...")
