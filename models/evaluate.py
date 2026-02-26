@@ -2,7 +2,7 @@
 Evaluation suite for MovieOracle XGBoost models.
 
 Runs comprehensive metrics on the held-out test set and performs
-temporal validation (train pre-2020, test 2020-2025).
+temporal validation using the configured split thresholds.
 
 Usage:
     python models/evaluate.py
@@ -45,8 +45,8 @@ FEATURES_PATH = os.path.join(PROJECT_ROOT, "data", "processed", "features.csv")
 MODELS_DIR = SCRIPT_DIR
 REPORT_PATH = os.path.join(MODELS_DIR, "evaluation_report.txt")
 
-TRAIN_END = "2020-01-01"
-VAL_END = "2023-01-01"
+TRAIN_END = "2014-01-01"
+VAL_END = "2016-01-01"
 
 
 # ─── Data utilities ───────────────────────────────────────────────────────────
@@ -191,26 +191,26 @@ def evaluate_success_model(clf, X: np.ndarray, y_cls: np.ndarray, split_name: st
 
 def temporal_validation(df: pd.DataFrame, feature_columns: list) -> dict:
     """
-    Re-train a simplified XGBoost model on pre-2020 data and test on 2020-2025.
+    Re-train a simplified XGBoost model on pre-TRAIN_END data and test on post-TRAIN_END.
     Does NOT re-run Optuna — uses fixed parameters for speed.
     Simulates the real-world scenario where you predict future films.
     """
-    print("  Running temporal validation (train < 2020, test 2020-2025) ...")
+    print(f"  Running temporal validation (train < {TRAIN_END}, test >= {TRAIN_END}) ...")
 
-    pre2020 = df[df["release_date"] < "2020-01-01"]
-    post2020 = df[(df["release_date"] >= "2020-01-01") & (df["release_date"] < "2025-01-01")]
+    pre = df[df["release_date"] < TRAIN_END]
+    post = df[df["release_date"] >= TRAIN_END]
 
-    if len(pre2020) < 100 or len(post2020) < 10:
-        return {"error": f"Insufficient data: {len(pre2020)} pre-2020, {len(post2020)} post-2020"}
+    if len(pre) < 100 or len(post) < 10:
+        return {"error": f"Insufficient data: {len(pre)} pre-{TRAIN_END}, {len(post)} post-{TRAIN_END}"}
 
-    X_pre = pre2020[feature_columns].values.astype(float)
-    y_pre_log = pre2020["log_revenue"].values.astype(float)
-    y_pre_cls = pre2020["success"].values.astype(float)
+    X_pre = pre[feature_columns].values.astype(float)
+    y_pre_log = pre["log_revenue"].values.astype(float)
+    y_pre_cls = pre["success"].values.astype(float)
 
-    X_post = post2020[feature_columns].values.astype(float)
-    y_post_log = post2020["log_revenue"].values.astype(float)
+    X_post = post[feature_columns].values.astype(float)
+    y_post_log = post["log_revenue"].values.astype(float)
     y_post_raw = np.expm1(y_post_log)
-    y_post_cls = post2020["success"].values.astype(float)
+    y_post_cls = post["success"].values.astype(float)
 
     # Simplified params (no Optuna re-run)
     simple_params = dict(
@@ -235,8 +235,8 @@ def temporal_validation(df: pd.DataFrame, feature_columns: list) -> dict:
     )
 
     result = {
-        "train_size": len(pre2020),
-        "test_size": len(post2020),
+        "train_size": len(pre),
+        "test_size": len(post),
         "mape": round(mape, 1),
         "r2": round(float(r2), 3),
     }
@@ -246,7 +246,7 @@ def temporal_validation(df: pd.DataFrame, feature_columns: list) -> dict:
         result["auc_roc"] = round(float(roc_auc_score(y_post_cls, proba)), 3)
 
     print(f"  Temporal validation: MAPE={mape:.1f}%, R²={r2:.3f}, "
-          f"train={len(pre2020)}, test={len(post2020)}")
+          f"train={len(pre)}, test={len(post)}")
     return result
 
 
@@ -299,7 +299,7 @@ def format_report(rev_metrics: dict, cls_metrics: dict, temporal: dict) -> str:
         lines.append(f"  Skipped: {temporal['error']}")
     else:
         lines += [
-            "── Temporal Validation (train<2020 → test 2020-2025) ────",
+            f"── Temporal Validation (train<{TRAIN_END} → test >={TRAIN_END}) ──",
             f"  Train size:          {temporal['train_size']:,}",
             f"  Test size:           {temporal['test_size']:,}",
             f"  MAPE:                {temporal['mape']:.1f}%",
@@ -321,7 +321,7 @@ def main():
 
     df_full = pd.concat([train_df, val_df, test_df])
     print(f"  Full dataset: {len(df_full):,} films")
-    print(f"  Test set (after 2023): {len(test_df):,} films")
+    print(f"  Test set (after {VAL_END}): {len(test_df):,} films")
 
     print("\nLoading models ...")
     p25, p50, p75, clf = load_models()
@@ -339,6 +339,10 @@ def main():
         eval_df = pd.concat([val_df, test_df])
         split_name = "val+test"
         print(f"\nUsing combined val+test set ({len(eval_df)} films) ...")
+
+    if len(eval_df) == 0:
+        print("ERROR: No evaluation data available. Check that split dates match the data range.")
+        sys.exit(1)
 
     X_eval, y_log_eval, y_raw_eval, y_cls_eval = df_to_arrays(eval_df, feature_columns)
 
