@@ -13,39 +13,40 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --navy: #0f172a; --navy-light: #1e293b; --navy-mid: #334155;
-      --slate: #475569; --slate-light: #94a3b8;
-      --teal: #06b6d4; --teal-dark: #0891b2; --teal-glow: rgba(6,182,212,0.15);
-      --emerald: #10b981; --amber: #f59e0b; --rose: #f43f5e; --violet: #8b5cf6;
-      --white: #f8fafc;
+      --bg-primary: #0c1220; --bg-surface: #151d2e; --bg-elevated: #1c2640;
+      --border: #243049; --border-focus: #3b5998;
+      --text-primary: #e8ecf1; --text-secondary: #8896ab; --text-tertiary: #566479;
+      --accent: #4f8ff7; --accent-muted: rgba(79,143,247,0.12); --accent-border: rgba(79,143,247,0.25);
+      --positive: #34d399; --warning: #fbbf24; --negative: #f87171;
     }
     html { scroll-behavior: smooth; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--navy); color: var(--white);
+      background: var(--bg-primary); color: var(--text-primary);
       min-height: 100vh; -webkit-font-smoothing: antialiased;
     }
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--navy); }
-    ::-webkit-scrollbar-thumb { background: var(--navy-mid); border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     @keyframes slideIn {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    @keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 20px; height: 20px;
-      background: var(--white); border-radius: 50%;
-      cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.4);
+      -webkit-appearance: none; width: 16px; height: 16px;
+      background: var(--text-primary); border-radius: 50%;
+      cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.3);
     }
     input[type=range]::-moz-range-thumb {
-      width: 20px; height: 20px; background: var(--white);
+      width: 16px; height: 16px; background: var(--text-primary);
       border-radius: 50%; cursor: pointer; border: none;
     }
-    select option { background: var(--navy-light); }
+    select option { background: var(--bg-surface); }
     @media (max-width: 900px) {
-      .main-grid { grid-template-columns: 1fr !important; }
       .results-grid { grid-template-columns: 1fr !important; }
+      .adjust-grid { grid-template-columns: 1fr !important; }
     }
   </style>
 </head>
@@ -191,25 +192,52 @@
                input:{ director, producer, writer, genre, budget, release_month:month } };
     }
 
+    // ── Icon Component ────────────────────────────────────────────────────────
+    function Icon({ name, size=16, color="currentColor" }) {
+      const paths = {
+        film: <><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></>,
+        sliders: <><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></>,
+        dollar: <><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></>,
+        trending: <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>,
+        target: <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>,
+        layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
+        dashboard: <><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></>,
+        chevronDown: <polyline points="6 9 12 15 18 9"/>,
+        chevronUp: <polyline points="18 15 12 9 6 15"/>,
+        arrowLeft: <><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>,
+        plus: <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
+      };
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+             stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {paths[name]}
+        </svg>
+      );
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
     const fmt  = n => n>=1e9?`$${(n/1e9).toFixed(1)}B`:n>=1e6?`$${(n/1e6).toFixed(0)}M`:n>=1e3?`$${(n/1e3).toFixed(0)}K`:`$${n}`;
     const tier = b => b<5e6?"Micro":b<2e7?"Low":b<7.5e7?"Mid":b<1.5e8?"High":"Blockbuster";
-    const roiColor = r => r>100?"var(--emerald)":r>0?"var(--teal)":r>-30?"var(--amber)":"var(--rose)";
+    const roiColor = r => r>100?"var(--positive)":r>0?"var(--accent)":r>-30?"var(--warning)":"var(--negative)";
     const BAR_COLORS = [
-      "linear-gradient(90deg,#06b6d4,#22d3ee)",
-      "linear-gradient(90deg,#8b5cf6,#a78bfa)",
-      "linear-gradient(90deg,#10b981,#34d399)",
-      "linear-gradient(90deg,#f59e0b,#fbbf24)",
-      "linear-gradient(90deg,#f43f5e,#fb7185)",
-      "linear-gradient(90deg,#6366f1,#818cf8)",
+      "var(--accent)",
+      "rgba(79,143,247,0.82)",
+      "rgba(79,143,247,0.66)",
+      "rgba(79,143,247,0.52)",
+      "rgba(79,143,247,0.40)",
+      "rgba(79,143,247,0.30)",
     ];
 
     // ── SearchableSelect ──────────────────────────────────────────────────────
-    function SearchableSelect({ label, required, items, placeholder, onChange, statFn }) {
+    function SearchableSelect({ label, required, items, placeholder, onChange, statFn, value }) {
       const [query,  setQuery]  = useState("");
       const [open,   setOpen]   = useState(false);
-      const [text,   setText]   = useState("");
+      const [text,   setText]   = useState(value || "");
       const ref = useRef(null);
+
+      useEffect(() => {
+        if (value !== undefined) setText(value);
+      }, [value]);
 
       useEffect(() => {
         const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -218,33 +246,33 @@
       }, []);
 
       const filtered = items.filter(i => !query || i.name.toLowerCase().includes(query.toLowerCase())).slice(0,10);
-      const base = { width:"100%", background:"var(--navy)", border:"1px solid var(--slate)", borderRadius:8,
-                     padding:"10px 14px", color:"var(--white)", fontSize:14, fontFamily:"inherit",
+      const base = { width:"100%", background:"var(--bg-primary)", border:"1px solid var(--border)", borderRadius:8,
+                     padding:"10px 14px", color:"var(--text-primary)", fontSize:14, fontFamily:"inherit",
                      outline:"none", transition:"all .2s", boxSizing:"border-box" };
 
       return (
         <div style={{marginBottom:18}}>
-          <div style={{fontSize:12,fontWeight:600,color:"var(--slate-light)",textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>
-            {label} {required && <span style={{color:"var(--rose)"}}>*</span>}
+          <div style={{fontSize:12,fontWeight:600,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,marginBottom:6}}>
+            {label} {required && <span style={{color:"var(--negative)"}}>*</span>}
           </div>
           <div ref={ref} style={{position:"relative"}}>
             <input style={base} placeholder={placeholder} value={text}
               onChange={e=>{setText(e.target.value);setQuery(e.target.value);setOpen(true);if(!e.target.value)onChange("");}}
-              onFocus={e=>{setOpen(true);e.target.style.borderColor="var(--teal)";e.target.style.boxShadow="0 0 0 3px var(--teal-glow)";}}
-              onBlur={e=>{e.target.style.boxShadow="none";}} />
+              onFocus={e=>{setOpen(true);e.target.style.borderColor="var(--accent)";e.target.style.boxShadow="0 0 0 2px var(--accent-muted)";}}
+              onBlur={e=>{e.target.style.boxShadow="none";e.target.style.borderColor="var(--border)";}} />
             {open && filtered.length>0 && (
-              <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,background:"var(--navy-light)",
-                           border:"1px solid var(--navy-mid)",borderRadius:8,maxHeight:200,overflowY:"auto",
-                           zIndex:200,boxShadow:"0 8px 32px rgba(0,0,0,.5)"}}>
+              <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,background:"var(--bg-surface)",
+                           border:"1px solid var(--border)",borderRadius:8,maxHeight:200,overflowY:"auto",
+                           zIndex:200,boxShadow:"0 8px 24px rgba(0,0,0,.4)"}}>
                 {filtered.map((item,i)=>(
                   <div key={i}
                     onClick={()=>{setText(item.name);setQuery("");setOpen(false);onChange(item.name);}}
-                    onMouseEnter={e=>e.currentTarget.style.background="var(--navy-mid)"}
+                    onMouseEnter={e=>e.currentTarget.style.background="var(--bg-elevated)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}
                     style={{padding:"10px 14px",cursor:"pointer",fontSize:13,display:"flex",
                             justifyContent:"space-between",alignItems:"center",transition:"background .15s"}}>
-                    <span style={{color:"var(--white)",fontWeight:500}}>{item.name}</span>
-                    <span style={{color:"var(--teal)",fontSize:11,fontWeight:600}}>{statFn(item)}</span>
+                    <span style={{color:"var(--text-primary)",fontWeight:500}}>{item.name}</span>
+                    <span style={{color:"var(--accent)",fontSize:11,fontWeight:600}}>{statFn(item)}</span>
                   </div>
                 ))}
               </div>
@@ -259,15 +287,15 @@
       const pct = Math.max(0, Math.min(100, value));
       const toXY = deg => ({ x: 90 + 70*Math.cos((deg-180)*Math.PI/180), y: 88 + 70*Math.sin((deg-180)*Math.PI/180) });
       const s = toXY(-180), e = toXY(-180+(pct/100)*180), la = pct>50?1:0;
-      const c = pct>=60?"var(--emerald)":pct>=35?"var(--amber)":"var(--rose)";
+      const c = pct>=60?"var(--positive)":pct>=35?"var(--warning)":"var(--negative)";
       const lbl = pct>=60?"Low Risk":pct>=35?"Moderate":"High Risk";
-      const bg  = pct>=60?"rgba(16,185,129,.15)":pct>=35?"rgba(245,158,11,.15)":"rgba(244,63,94,.15)";
+      const bg  = pct>=60?"rgba(52,211,153,.12)":pct>=35?"rgba(251,191,36,.12)":"rgba(248,113,113,.12)";
       return (
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 0"}}>
           <svg width="180" height="105" viewBox="0 0 180 105">
             <path d="M 20,88 A 70,70 0 0 1 160,88" fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="12" strokeLinecap="round"/>
-            {pct>0 && <path d={`M ${s.x},${s.y} A 70,70 0 ${la} 1 ${e.x},${e.y}`} fill="none" stroke={c} strokeWidth="12" strokeLinecap="round" style={{filter:`drop-shadow(0 0 8px ${c})`}}/>}
-            <text x="90" y="78" textAnchor="middle" fill={c} style={{fontSize:30,fontWeight:800,fontFamily:"Inter"}}>{pct.toFixed(1)}%</text>
+            {pct>0 && <path d={`M ${s.x},${s.y} A 70,70 0 ${la} 1 ${e.x},${e.y}`} fill="none" stroke={c} strokeWidth="12" strokeLinecap="round"/>}
+            <text x="90" y="78" textAnchor="middle" fill={c} style={{fontSize:30,fontWeight:700,fontFamily:"Inter"}}>{pct.toFixed(1)}%</text>
           </svg>
           <span style={{fontSize:12,fontWeight:600,padding:"4px 12px",borderRadius:20,background:bg,color:c}}>{lbl}</span>
         </div>
@@ -282,10 +310,10 @@
         <div>
           {entries.map(([label,value],i)=>(
             <div key={label} style={{display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
-              <span style={{fontSize:12,color:"var(--slate-light)",width:130,textAlign:"right",flexShrink:0}}>{label}</span>
-              <div style={{flex:1,height:22,background:"rgba(0,0,0,.2)",borderRadius:6,overflow:"hidden"}}>
-                <div style={{height:"100%",width:`${(value/max)*100}%`,background:BAR_COLORS[i%6],borderRadius:6,
-                             display:"flex",alignItems:"center",paddingLeft:8,fontSize:11,fontWeight:700,
+              <span style={{fontSize:12,color:"var(--text-secondary)",width:130,textAlign:"right",flexShrink:0}}>{label}</span>
+              <div style={{flex:1,height:20,background:"rgba(0,0,0,.2)",borderRadius:4,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${(value/max)*100}%`,background:BAR_COLORS[i%6],borderRadius:4,
+                             display:"flex",alignItems:"center",paddingLeft:8,fontSize:11,fontWeight:600,
                              color:"white",transition:"width .8s cubic-bezier(.22,1,.36,1)",minWidth:value>0?32:0}}>
                   {value>3?`${value}%`:""}
                 </div>
@@ -297,11 +325,83 @@
     }
 
     // ── Shared styles ─────────────────────────────────────────────────────────
-    const card   = (extra={}) => ({background:"var(--navy-light)",border:"1px solid var(--navy-mid)",borderRadius:12,padding:28,boxShadow:"0 4px 24px rgba(0,0,0,.3)",...extra});
-    const hdr    = {fontSize:16,fontWeight:700,marginBottom:20,display:"flex",alignItems:"center",gap:8};
-    const ico    = {width:28,height:28,background:"var(--teal-glow)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14};
-    const selSty = {width:"100%",background:"var(--navy)",border:"1px solid var(--slate)",borderRadius:8,padding:"10px 14px",color:"var(--white)",fontSize:14,fontFamily:"inherit",outline:"none",appearance:"none",backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,backgroundRepeat:"no-repeat",backgroundPosition:"right 14px center",paddingRight:40,cursor:"pointer"};
-    const lbl    = {fontSize:12,fontWeight:600,color:"var(--slate-light)",textTransform:"uppercase",letterSpacing:.5,marginBottom:6,display:"block"};
+    const card   = (extra={}) => ({background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:10,padding:24,...extra});
+    const hdr    = {fontSize:14,fontWeight:600,marginBottom:18,display:"flex",alignItems:"center",gap:8,color:"var(--text-secondary)",textTransform:"uppercase",letterSpacing:"0.04em"};
+    const selSty = {width:"100%",background:"var(--bg-primary)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 14px",color:"var(--text-primary)",fontSize:14,fontFamily:"inherit",outline:"none",appearance:"none",backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23566479' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,backgroundRepeat:"no-repeat",backgroundPosition:"right 14px center",paddingRight:40,cursor:"pointer"};
+    const lbl    = {fontSize:12,fontWeight:600,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,marginBottom:6,display:"block"};
+
+    // ── Form (reusable across both pages) ─────────────────────────────────────
+    function PredictionForm({ director, setDirector, producer, setProducer, writer, setWriter,
+                              genre, setGenre, budget, setBudget, month, setMonth,
+                              showAdv, setShowAdv, loading, onSubmit, submitLabel }) {
+      return (
+        <form onSubmit={onSubmit}>
+          <SearchableSelect label="Director" required items={DIRECTORS} value={director}
+            placeholder="Search directors…" onChange={setDirector}
+            statFn={i=>`ROI: ${i.avg_roi}x`} />
+          <SearchableSelect label="Producer" items={PRODUCERS} value={producer}
+            placeholder="Search producers…" onChange={setProducer}
+            statFn={i=>`Rev: ${i.rev_mult}x`} />
+          <SearchableSelect label="Writer" items={WRITERS} value={writer}
+            placeholder="Search writers…" onChange={setWriter}
+            statFn={i=>`Quality: ${Math.round(i.quality*100)}%`} />
+
+          <div style={{marginBottom:18}}>
+            <label style={lbl}>Genre</label>
+            <select style={selSty} value={genre} onChange={e=>setGenre(e.target.value)}>
+              {GENRES.map(g=><option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
+
+          <div style={{marginBottom:18}}>
+            <label style={lbl}>Production Budget</label>
+            <div style={{textAlign:"center",fontSize:20,fontWeight:700,color:"var(--text-primary)",marginBottom:8,fontVariantNumeric:"tabular-nums"}}>{fmt(budget)}</div>
+            <input type="range" min={500000} max={400000000} step={500000} value={budget}
+              onChange={e=>setBudget(Number(e.target.value))}
+              style={{width:"100%",WebkitAppearance:"none",appearance:"none",height:4,
+                      background:`linear-gradient(90deg, var(--accent) ${((budget-500000)/(400000000-500000))*100}%, var(--border) ${((budget-500000)/(400000000-500000))*100}%)`,
+                      borderRadius:2,outline:"none"}} />
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--text-tertiary)",marginTop:6}}>
+              <span>$500K</span><span>$50M</span><span>$150M</span><span>$400M</span>
+            </div>
+            <div style={{textAlign:"center",marginTop:4,fontSize:11,color:"var(--text-secondary)",fontWeight:500}}>{tier(budget)} Budget</div>
+          </div>
+
+          <button type="button" onClick={()=>setShowAdv(!showAdv)}
+            style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",color:"var(--text-secondary)",
+                    fontSize:13,fontWeight:500,cursor:"pointer",border:"none",background:"none",width:"100%",marginBottom:4}}>
+            <span style={{fontSize:10,transition:"transform .2s",transform:showAdv?"rotate(90deg)":"none",display:"inline-block"}}>▶</span>
+            Advanced Options
+          </button>
+
+          {showAdv && (
+            <div style={{marginBottom:18}}>
+              <label style={lbl}>Release Month</label>
+              <select style={selSty} value={month} onChange={e=>setMonth(Number(e.target.value))}>
+                {MONTH_NAMES.slice(1).map((m,i)=><option key={i+1} value={i+1}>{m}</option>)}
+              </select>
+            </div>
+          )}
+
+          <button type="submit" disabled={!director||loading}
+            style={{width:"100%",padding:14,border:"none",borderRadius:8,fontSize:15,fontWeight:600,
+                    fontFamily:"inherit",letterSpacing:.3,marginTop:10,transition:"all .2s",
+                    cursor:!director||loading?"not-allowed":"pointer",
+                    opacity:!director||loading?.5:1,
+                    background:!director||loading?"var(--text-tertiary)":"var(--accent)",
+                    color:"white"}}>
+            {loading
+              ? <span style={{display:"inline-flex",alignItems:"center",gap:8}}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" style={{animation:"spin 0.8s linear infinite"}}>
+                    <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="28" strokeDashoffset="8" strokeLinecap="round"/>
+                  </svg>
+                  Analyzing
+                </span>
+              : submitLabel}
+          </button>
+        </form>
+      );
+    }
 
     // ── App ───────────────────────────────────────────────────────────────────
     function App() {
@@ -314,182 +414,234 @@
       const [showAdv,  setShowAdv]  = useState(false);
       const [result,   setResult]   = useState(null);
       const [loading,  setLoading]  = useState(false);
+      const [page,     setPage]     = useState("input");
+      const [showAdjust, setShowAdjust] = useState(false);
 
       function handleSubmit(e) {
         e.preventDefault();
         if (!director) return;
         setLoading(true);
-        setResult(null);
         setTimeout(() => {
           setResult(runPrediction({ director, producer:producer||"Unknown", writer:writer||"Unknown", genre, budget, month }));
           setLoading(false);
+          setPage("results");
+          setShowAdjust(false);
         }, 700);
       }
 
-      return (
-        <div style={{minHeight:"100vh",background:"var(--navy)",color:"var(--white)",fontFamily:"'Inter',system-ui,sans-serif"}}>
-          <div style={{maxWidth:1400,margin:"0 auto",padding:"24px 32px"}}>
+      function handleNewPrediction() {
+        setDirector(""); setProducer(""); setWriter("");
+        setGenre("Action"); setBudget(50_000_000); setMonth(6);
+        setShowAdv(false); setResult(null); setShowAdjust(false);
+        setPage("input");
+      }
 
-            {/* Header */}
-            <header style={{textAlign:"center",padding:"40px 0 32px"}}>
-              <div style={{display:"inline-flex",alignItems:"center",gap:12,marginBottom:12}}>
-                <div style={{width:48,height:48,background:"linear-gradient(135deg,var(--teal),var(--violet))",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:"0 0 30px rgba(6,182,212,.3)"}}>🎬</div>
-                <h1 style={{fontSize:32,fontWeight:800,background:"linear-gradient(135deg,var(--teal),#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:0}}>BoxOffice Oracle</h1>
+      const formProps = { director, setDirector, producer, setProducer, writer, setWriter,
+                          genre, setGenre, budget, setBudget, month, setMonth,
+                          showAdv, setShowAdv, loading, onSubmit: handleSubmit };
+
+      // ── Page 1: Input ──
+      if (page === "input") {
+        return (
+          <div style={{minHeight:"100vh",background:"var(--bg-primary)",color:"var(--text-primary)",fontFamily:"'Inter',system-ui,sans-serif",
+                       display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 32px",animation:"fadeIn .3s ease"}}>
+            <div style={{width:"100%",maxWidth:520}}>
+
+              {/* Header */}
+              <header style={{textAlign:"center",marginBottom:32}}>
+                <div style={{display:"inline-flex",alignItems:"center",gap:14,marginBottom:8}}>
+                  <div style={{width:40,height:40,border:"2px solid var(--accent)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <Icon name="film" size={20} color="var(--accent)" />
+                  </div>
+                  <h1 style={{fontSize:28,fontWeight:700,color:"var(--text-primary)",margin:0,letterSpacing:"-0.02em"}}>BoxOffice Oracle</h1>
+                </div>
+                <p style={{color:"var(--text-tertiary)",fontSize:13,margin:0,letterSpacing:"0.02em"}}>Movie financial success prediction</p>
+              </header>
+
+              {/* Form Card */}
+              <div style={card()}>
+                <div style={hdr}><Icon name="sliders" size={16} color="var(--accent)" />Prediction Input</div>
+                <PredictionForm {...formProps} submitLabel="Generate Forecast" />
               </div>
-              <p style={{color:"var(--slate-light)",fontSize:15,marginTop:6}}>AI-powered movie financial success prediction</p>
+
+              <footer style={{textAlign:"center",padding:"32px 0 16px",color:"var(--text-tertiary)",fontSize:12}}>
+                BoxOffice Oracle — Predictions are statistical estimates based on historical patterns. Not financial advice.
+              </footer>
+            </div>
+          </div>
+        );
+      }
+
+      // ── Page 2: Results ──
+      return (
+        <div style={{minHeight:"100vh",background:"var(--bg-primary)",color:"var(--text-primary)",fontFamily:"'Inter',system-ui,sans-serif",animation:"fadeIn .3s ease"}}>
+          <div style={{maxWidth:1200,margin:"0 auto",padding:"24px 32px"}}>
+
+            {/* Top Bar */}
+            <header style={{padding:"12px 0 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:14}}>
+                <div style={{width:36,height:36,border:"2px solid var(--accent)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <Icon name="film" size={18} color="var(--accent)" />
+                </div>
+                <div>
+                  <h1 style={{fontSize:22,fontWeight:700,color:"var(--text-primary)",margin:0,letterSpacing:"-0.02em"}}>BoxOffice Oracle</h1>
+                </div>
+              </div>
+              <button onClick={handleNewPrediction}
+                style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 18px",
+                        background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,
+                        color:"var(--text-primary)",fontSize:13,fontWeight:600,cursor:"pointer",
+                        fontFamily:"inherit",transition:"all .15s"}}
+                onMouseEnter={e=>e.currentTarget.style.borderColor="var(--accent)"}
+                onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
+                <Icon name="plus" size={14} color="var(--accent)" />
+                New Prediction
+              </button>
             </header>
 
-            {/* Grid */}
-            <div className="main-grid" style={{display:"grid",gridTemplateColumns:"420px 1fr",gap:28,alignItems:"start"}}>
+            {/* Input Summary Chips */}
+            {result && (
+              <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:8,marginBottom:20}}>
+                {[
+                  {label:"Director", value:result.input.director},
+                  result.input.producer!=="Unknown"&&{label:"Producer", value:result.input.producer},
+                  result.input.writer!=="Unknown"&&{label:"Writer", value:result.input.writer},
+                  {label:"Genre", value:result.input.genre},
+                  {label:"Budget", value:fmt(result.input.budget)},
+                  {label:"Release", value:MONTH_NAMES[result.input.release_month]},
+                ].filter(Boolean).map((c,i)=>(
+                  <span key={i} style={{background:"var(--bg-elevated)",border:"1px solid var(--border)",borderRadius:6,padding:"4px 10px",fontSize:12,display:"inline-flex",gap:6}}>
+                    <span style={{color:"var(--text-tertiary)",fontWeight:500}}>{c.label}</span>
+                    <span style={{color:"var(--text-primary)",fontWeight:600}}>{c.value}</span>
+                  </span>
+                ))}
+                <button onClick={()=>setShowAdjust(!showAdjust)}
+                  style={{display:"inline-flex",alignItems:"center",gap:6,padding:"4px 12px",
+                          background:"none",border:"1px solid var(--accent-border)",borderRadius:6,
+                          color:"var(--accent)",fontSize:12,fontWeight:600,cursor:"pointer",
+                          fontFamily:"inherit",transition:"all .15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.background="var(--accent-muted)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="none";}}>
+                  <Icon name={showAdjust?"chevronUp":"chevronDown"} size={12} color="var(--accent)" />
+                  {showAdjust ? "Hide Parameters" : "Adjust Parameters"}
+                </button>
+              </div>
+            )}
 
-              {/* ── LEFT: Form ── */}
-              <div style={card()}>
-                <div style={hdr}><div style={ico}>🎯</div>Prediction Input</div>
-                <form onSubmit={handleSubmit}>
-
-                  <SearchableSelect label="Director" required items={DIRECTORS}
-                    placeholder="Search directors…" onChange={setDirector}
-                    statFn={i=>`ROI: ${i.avg_roi}x`} />
-                  <SearchableSelect label="Producer" items={PRODUCERS}
-                    placeholder="Search producers…" onChange={setProducer}
-                    statFn={i=>`Rev: ${i.rev_mult}x`} />
-                  <SearchableSelect label="Writer" items={WRITERS}
-                    placeholder="Search writers…" onChange={setWriter}
-                    statFn={i=>`Quality: ${Math.round(i.quality*100)}%`} />
-
-                  <div style={{marginBottom:18}}>
-                    <label style={lbl}>Genre</label>
-                    <select style={selSty} value={genre} onChange={e=>setGenre(e.target.value)}>
-                      {GENRES.map(g=><option key={g} value={g}>{g}</option>)}
-                    </select>
+            {/* Collapsible Adjust Panel */}
+            {showAdjust && (
+              <div style={{...card(),marginBottom:24,animation:"slideIn .3s ease both"}}>
+                <div style={hdr}><Icon name="sliders" size={16} color="var(--accent)" />Adjust Parameters</div>
+                <div className="adjust-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:20}}>
+                  <div>
+                    <SearchableSelect label="Director" required items={DIRECTORS} value={director}
+                      placeholder="Search directors…" onChange={setDirector}
+                      statFn={i=>`ROI: ${i.avg_roi}x`} />
+                    <SearchableSelect label="Producer" items={PRODUCERS} value={producer}
+                      placeholder="Search producers…" onChange={setProducer}
+                      statFn={i=>`Rev: ${i.rev_mult}x`} />
                   </div>
-
-                  <div style={{marginBottom:18}}>
-                    <label style={lbl}>Production Budget</label>
-                    <div style={{textAlign:"center",fontSize:22,fontWeight:700,color:"var(--teal)",marginBottom:8}}>{fmt(budget)}</div>
-                    <input type="range" min={500000} max={400000000} step={500000} value={budget}
-                      onChange={e=>setBudget(Number(e.target.value))}
-                      style={{width:"100%",WebkitAppearance:"none",appearance:"none",height:6,
-                              background:"linear-gradient(90deg,var(--emerald),var(--teal),var(--violet),var(--rose))",
-                              borderRadius:3,outline:"none"}} />
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--slate)",marginTop:6}}>
-                      <span>$500K</span><span>$50M</span><span>$150M</span><span>$400M</span>
+                  <div>
+                    <SearchableSelect label="Writer" items={WRITERS} value={writer}
+                      placeholder="Search writers…" onChange={setWriter}
+                      statFn={i=>`Quality: ${Math.round(i.quality*100)}%`} />
+                    <div style={{marginBottom:18}}>
+                      <label style={lbl}>Genre</label>
+                      <select style={selSty} value={genre} onChange={e=>setGenre(e.target.value)}>
+                        {GENRES.map(g=><option key={g} value={g}>{g}</option>)}
+                      </select>
                     </div>
-                    <div style={{textAlign:"center",marginTop:4,fontSize:11,color:"var(--teal)",fontWeight:600}}>{tier(budget)} Budget</div>
                   </div>
-
-                  <button type="button" onClick={()=>setShowAdv(!showAdv)}
-                    style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",color:"var(--slate-light)",
-                            fontSize:13,fontWeight:500,cursor:"pointer",border:"none",background:"none",width:"100%",marginBottom:4}}>
-                    <span style={{fontSize:10,transition:"transform .2s",transform:showAdv?"rotate(90deg)":"none",display:"inline-block"}}>▶</span>
-                    Advanced Options
-                  </button>
-
-                  {showAdv && (
+                  <div>
+                    <div style={{marginBottom:18}}>
+                      <label style={lbl}>Production Budget</label>
+                      <div style={{textAlign:"center",fontSize:18,fontWeight:700,color:"var(--text-primary)",marginBottom:6,fontVariantNumeric:"tabular-nums"}}>{fmt(budget)}</div>
+                      <input type="range" min={500000} max={400000000} step={500000} value={budget}
+                        onChange={e=>setBudget(Number(e.target.value))}
+                        style={{width:"100%",WebkitAppearance:"none",appearance:"none",height:4,
+                                background:`linear-gradient(90deg, var(--accent) ${((budget-500000)/(400000000-500000))*100}%, var(--border) ${((budget-500000)/(400000000-500000))*100}%)`,
+                                borderRadius:2,outline:"none"}} />
+                      <div style={{textAlign:"center",marginTop:4,fontSize:11,color:"var(--text-secondary)",fontWeight:500}}>{tier(budget)} Budget</div>
+                    </div>
                     <div style={{marginBottom:18}}>
                       <label style={lbl}>Release Month</label>
                       <select style={selSty} value={month} onChange={e=>setMonth(Number(e.target.value))}>
                         {MONTH_NAMES.slice(1).map((m,i)=><option key={i+1} value={i+1}>{m}</option>)}
                       </select>
                     </div>
-                  )}
-
-                  <button type="submit" disabled={!director||loading}
-                    style={{width:"100%",padding:14,border:"none",borderRadius:10,fontSize:15,fontWeight:700,
-                            fontFamily:"inherit",letterSpacing:.3,marginTop:10,transition:"all .2s",
-                            cursor:!director||loading?"not-allowed":"pointer",
-                            opacity:!director||loading?.6:1,
-                            background:!director||loading?"var(--slate)":"linear-gradient(135deg,var(--teal-dark),var(--teal))",
-                            color:"white",
-                            boxShadow:!director||loading?"none":"0 4px 20px rgba(6,182,212,.3)"}}>
-                    {loading
-                      ? <span>Analyzing<span style={{animation:"pulse 1.2s infinite"}}> .</span><span style={{animation:"pulse 1.2s .15s infinite"}}> .</span><span style={{animation:"pulse 1.2s .3s infinite"}}> .</span></span>
-                      : "🔮  Predict Financial Outcome"}
-                  </button>
-                </form>
-              </div>
-
-              {/* ── RIGHT: Results ── */}
-              <div>
-                {!result && !loading && (
-                  <div style={card({textAlign:"center",padding:"80px 40px"})}>
-                    <div style={{fontSize:64,marginBottom:20,opacity:.25}}>🎬</div>
-                    <div style={{fontSize:20,fontWeight:700,color:"var(--slate-light)",marginBottom:8}}>Ready to Predict</div>
-                    <div style={{color:"var(--slate)",fontSize:14,maxWidth:400,margin:"0 auto",lineHeight:1.6}}>
-                      Select a director and configure your film parameters, then click "Predict Financial Outcome" to see AI-powered projections.
-                    </div>
-                  </div>
-                )}
-
-                {result && (
-                  <div>
-                    {/* Chips */}
-                    <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
-                      {[`🎬 ${result.input.director}`,
-                        result.input.producer!=="Unknown"&&`🎥 ${result.input.producer}`,
-                        result.input.writer!=="Unknown"&&`✍️ ${result.input.writer}`,
-                        `🎭 ${result.input.genre}`,
-                        `💰 ${fmt(result.input.budget)}`,
-                        `📅 ${MONTH_NAMES[result.input.release_month]}`
-                      ].filter(Boolean).map((c,i)=>(
-                        <span key={i} style={{background:"rgba(6,182,212,.1)",border:"1px solid rgba(6,182,212,.2)",borderRadius:20,padding:"4px 12px",fontSize:12,color:"var(--teal)"}}>{c}</span>
-                      ))}
-                    </div>
-
-                    <div className="results-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-
-                      {/* Revenue */}
-                      <div style={card({animation:"slideIn .5s ease .1s both"})}>
-                        <div style={hdr}><div style={ico}>💰</div>Predicted Revenue</div>
-                        <div style={{fontSize:36,fontWeight:800,color:"var(--teal)",lineHeight:1.1,marginBottom:6}}>{fmt(result.predicted_revenue)}</div>
-                        <div style={{fontSize:13,color:"var(--slate-light)"}}>Worldwide Gross</div>
-                        <div style={{marginTop:10,padding:"8px 12px",background:"rgba(0,0,0,.2)",borderRadius:8,fontSize:12,color:"var(--slate-light)"}}>
-                          Range: <strong style={{color:"var(--white)"}}>{fmt(result.revenue_low)}</strong> — <strong style={{color:"var(--white)"}}>{fmt(result.revenue_high)}</strong>
-                        </div>
-                      </div>
-
-                      {/* ROI */}
-                      <div style={card({animation:"slideIn .5s ease .2s both"})}>
-                        <div style={hdr}><div style={ico}>📈</div>Return on Investment</div>
-                        <div style={{fontSize:36,fontWeight:800,color:roiColor(result.roi_percent),lineHeight:1.1,marginBottom:6}}>
-                          {result.roi_percent>0?"+":""}{result.roi_percent}%
-                        </div>
-                        <div style={{fontSize:13,color:"var(--slate-light)"}}>
-                          {result.roi_percent>0?"Projected Profit":"Projected Loss"}:{" "}
-                          <strong style={{color:roiColor(result.roi_percent)}}>{fmt(Math.abs(result.predicted_revenue-result.budget))}</strong>
-                        </div>
-                        <div style={{marginTop:10,padding:"8px 12px",background:"rgba(0,0,0,.2)",borderRadius:8,fontSize:12,color:"var(--slate-light)"}}>
-                          Budget: <strong style={{color:"var(--white)"}}>{fmt(result.budget)}</strong>
-                        </div>
-                      </div>
-
-                      {/* Gauge */}
-                      <div style={card({animation:"slideIn .5s ease .3s both"})}>
-                        <div style={hdr}><div style={ico}>🎯</div>Success Probability</div>
-                        <Gauge value={result.success_probability} />
-                        <div style={{textAlign:"center",marginTop:8}}>
-                          <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:600,
-                            background:result.confidence==="High"?"rgba(16,185,129,.15)":result.confidence==="Medium"?"rgba(245,158,11,.15)":"rgba(244,63,94,.15)",
-                            color:result.confidence==="High"?"var(--emerald)":result.confidence==="Medium"?"var(--amber)":"var(--rose)"}}>
-                            {result.confidence==="High"?"●":result.confidence==="Medium"?"◐":"○"} {result.confidence} Confidence
+                    <button onClick={handleSubmit} disabled={!director||loading}
+                      style={{width:"100%",padding:12,border:"none",borderRadius:8,fontSize:14,fontWeight:600,
+                              fontFamily:"inherit",transition:"all .2s",
+                              cursor:!director||loading?"not-allowed":"pointer",
+                              opacity:!director||loading?.5:1,
+                              background:!director||loading?"var(--text-tertiary)":"var(--accent)",
+                              color:"white"}}>
+                      {loading
+                        ? <span style={{display:"inline-flex",alignItems:"center",gap:8}}>
+                            <svg width="14" height="14" viewBox="0 0 16 16" style={{animation:"spin 0.8s linear infinite"}}>
+                              <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="28" strokeDashoffset="8" strokeLinecap="round"/>
+                            </svg>
+                            Analyzing
                           </span>
-                        </div>
-                      </div>
-
-                      {/* Importance */}
-                      <div style={card({animation:"slideIn .5s ease .4s both"})}>
-                        <div style={hdr}><div style={ico}>🧠</div>Prediction Drivers</div>
-                        <ImportanceChart data={result.feature_importance} />
-                      </div>
-
-                    </div>
+                        : "Update Forecast"}
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
+            )}
 
-            </div>
+            {/* Results Grid */}
+            {result && (
+              <div className="results-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
 
-            <footer style={{textAlign:"center",padding:"40px 0 24px",color:"var(--slate)",fontSize:12}}>
+                {/* Revenue */}
+                <div style={card({animation:"slideIn .4s ease .05s both"})}>
+                  <div style={hdr}><Icon name="dollar" size={16} color="var(--accent)" />Predicted Revenue</div>
+                  <div style={{fontSize:36,fontWeight:700,color:"var(--text-primary)",lineHeight:1.1,marginBottom:6,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em"}}>{fmt(result.predicted_revenue)}</div>
+                  <div style={{fontSize:13,color:"var(--text-secondary)"}}>Worldwide Gross</div>
+                  <div style={{marginTop:10,padding:"8px 12px",background:"rgba(0,0,0,.2)",borderRadius:8,fontSize:12,color:"var(--text-secondary)"}}>
+                    Range: <strong style={{color:"var(--text-primary)"}}>{fmt(result.revenue_low)}</strong> — <strong style={{color:"var(--text-primary)"}}>{fmt(result.revenue_high)}</strong>
+                  </div>
+                </div>
+
+                {/* ROI */}
+                <div style={card({animation:"slideIn .4s ease .1s both"})}>
+                  <div style={hdr}><Icon name="trending" size={16} color="var(--accent)" />Return on Investment</div>
+                  <div style={{fontSize:36,fontWeight:700,color:roiColor(result.roi_percent),lineHeight:1.1,marginBottom:6,fontVariantNumeric:"tabular-nums",letterSpacing:"-0.02em"}}>
+                    {result.roi_percent>0?"+":""}{result.roi_percent}%
+                  </div>
+                  <div style={{fontSize:13,color:"var(--text-secondary)"}}>
+                    {result.roi_percent>0?"Projected Profit":"Projected Loss"}:{" "}
+                    <strong style={{color:roiColor(result.roi_percent)}}>{fmt(Math.abs(result.predicted_revenue-result.budget))}</strong>
+                  </div>
+                  <div style={{marginTop:10,padding:"8px 12px",background:"rgba(0,0,0,.2)",borderRadius:8,fontSize:12,color:"var(--text-secondary)"}}>
+                    Budget: <strong style={{color:"var(--text-primary)"}}>{fmt(result.budget)}</strong>
+                  </div>
+                </div>
+
+                {/* Gauge */}
+                <div style={card({animation:"slideIn .4s ease .15s both"})}>
+                  <div style={hdr}><Icon name="target" size={16} color="var(--accent)" />Success Probability</div>
+                  <Gauge value={result.success_probability} />
+                  <div style={{textAlign:"center",marginTop:8}}>
+                    <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:600,
+                      background:result.confidence==="High"?"rgba(52,211,153,.12)":result.confidence==="Medium"?"rgba(251,191,36,.12)":"rgba(248,113,113,.12)",
+                      color:result.confidence==="High"?"var(--positive)":result.confidence==="Medium"?"var(--warning)":"var(--negative)"}}>
+                      {result.confidence==="High"?"●":result.confidence==="Medium"?"◐":"○"} {result.confidence} Confidence
+                    </span>
+                  </div>
+                </div>
+
+                {/* Importance */}
+                <div style={card({animation:"slideIn .4s ease .2s both"})}>
+                  <div style={hdr}><Icon name="layers" size={16} color="var(--accent)" />Prediction Drivers</div>
+                  <ImportanceChart data={result.feature_importance} />
+                </div>
+
+              </div>
+            )}
+
+            <footer style={{textAlign:"center",padding:"40px 0 24px",color:"var(--text-tertiary)",fontSize:12}}>
               BoxOffice Oracle — Predictions are statistical estimates based on historical patterns. Not financial advice.
             </footer>
           </div>
